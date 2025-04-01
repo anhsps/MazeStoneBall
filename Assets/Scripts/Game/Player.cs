@@ -50,6 +50,7 @@ public class Player : MonoBehaviour
 
         if ((Input.GetKeyDown(KeyCode.Space) || moveDir.y > 0) && IsGrounded())
         {
+            SoundManager18.Instance.PlaySound(4);
             rb.velocity = new Vector3(rb.velocity.x, jumpSpeed, rb.velocity.z);
         }
     }
@@ -103,5 +104,4 @@ public class Player : MonoBehaviour
         done = true;
         GameManager18.Instance.GameLose();
     }
-
 }

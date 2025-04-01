@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using DG.Tweening;
 using System.Threading.Tasks;
-using System.Linq;
 
 public class GameManager18 : Singleton<GameManager18>
 {
@@ -20,6 +19,7 @@ public class GameManager18 : Singleton<GameManager18>
     [Header("Grid")]
     [SerializeField] private Transform gridParent;
     [SerializeField] private GameObject[] gridPrefabs;
+    [SerializeField] private Transform[] cameraPos;
 
     protected override void Awake()
     {
@@ -39,16 +39,14 @@ public class GameManager18 : Singleton<GameManager18>
     {
         if (levelIndex < 1 || levelIndex > maxLV) levelIndex = 1;
 
-        //maxLV = gridPrefabs.Length;
+        maxLV = gridPrefabs.Length;
         if (levelIndex == maxLV && nextBtn_win) nextBtn_win.SetActive(false);
 
         PlayerPrefs.SetInt("CurrentLevel", levelIndex);
 
-        if (lvText) lvText.text = "LEVEL " + (levelIndex < 10 ? "0" + levelIndex : levelIndex);
+        if (lvText) lvText.text = "LEVEL " + levelIndex.ToString("00");
 
         if (gridPrefabs.Length > 0) CreateGrid(levelIndex);
-        Vector2Int gridSize = GetGridSize(gridParent);
-        UpdateCamera(gridSize);
     }
 
     private void CreateGrid(int levelIndex)
@@ -58,34 +56,12 @@ public class GameManager18 : Singleton<GameManager18>
 
         if (gridPrefabs[levelIndex - 1] != null)
             Instantiate(gridPrefabs[levelIndex - 1], gridParent);
-    }
-    private Vector2Int GetGridSize(Transform gridParent)
-    {
-        var walls = gridParent.GetComponentsInChildren<Transform>()
-            .Where(b => b.gameObject.layer == LayerMask.NameToLayer("Ground"))
-            .ToList();
 
-        if (walls.Count == 0) return Vector2Int.zero;
-
-        int minX = walls.Min(b => Mathf.RoundToInt(b.position.x));
-        int minZ = walls.Min(b => Mathf.RoundToInt(b.position.z));
-        int maxX = walls.Max(b => Mathf.RoundToInt(b.position.x));
-        int maxZ = walls.Max(b => Mathf.RoundToInt(b.position.z));
-
-        int width = maxX - minX + 1;
-        int height = maxZ - minZ + 1;
-
-        return new Vector2Int(width, height);
-    }
-
-    private void UpdateCamera(Vector2Int gridSize)
-    {
-        float size = Mathf.Max(gridSize.x, gridSize.y) - 1;
         Camera.main.transform.rotation = Quaternion.Euler(60, 0, 0);
-        Camera.main.transform.position = new Vector3(-1, size, -0.7f * size);
+        if (cameraPos[levelIndex - 1] != null)
+            Camera.main.transform.position = cameraPos[levelIndex - 1].transform.position;
     }
 
-    //public void Home() => SceneManager.LoadScene("Home");
     public void Retry() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
     public void NextLV() => SetCurrentLV(level + 1);
@@ -145,8 +121,5 @@ public class GameManager18 : Singleton<GameManager18>
         if (menu) menu.SetActive(false);
     }
 
-    public void HackGame()
-    {
-        GameWin();
-    }
+    public void HackGame()=>GameWin();
 }
